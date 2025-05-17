@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Аналізатор акцій</title>
+</head>
+<body>
+    <h1>Аналізатор акцій</h1>
+    <form method="GET" action="/">
+        <label for="stock">Акція:</label>
+        <input type="text" name="stock" id="stock" required><br>
+
+        <label for="start_date">Дата початку:</label>
+        <input type="date" name="start_date" id="start_date" required><br>
+
+        <label for="end_date">Дата кінця:</label>
+        <input type="date" name="end_date" id="end_date" required><br>
+
+        <label for="prediction">Прогноз ціни:</label>
+        <input type="text" name="prediction" id="prediction" required><br>
+
+        <button type="submit">Аналізувати</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,5 @@
+https://finance.yahoo.com/quote/AAPL/history/
+https://www.nasdaq.com/market-activity/stocks/aapl/historical
+https://stooq.com/q/d/?s=aapl
+https://www.marketwatch.com/investing/stock/aapl/download-data
+https://www.investing.com/equities/apple-computer-inc-historical-data

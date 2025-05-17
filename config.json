@@ -1,0 +1,12 @@
+{
+    "default_stock": "AAPL",
+    "default_start_date": "2023-01-01",
+    "default_end_date": "2023-12-31",
+    "default_prediction": "200",
+    "data_sources": [
+        "https://www.nasdaq.com",
+        "https://www.investing.com",
+        "https://www.marketwatch.com",
+        "https://finance.yahoo.com"
+    ]
+}
