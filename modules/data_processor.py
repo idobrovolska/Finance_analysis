@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 class DataProcessor:
     def __init__(self, logger):
         self.logger = logger
@@ -8,15 +7,20 @@ class DataProcessor:
     def clean_data(self, df):
         self.logger.info("🧹 Очищення даних...")
         try:
-            # Видалення порожніх рядків і стовпців
+            # Видаляємо порожні рядки та стовпці
             df.dropna(how="all", inplace=True)
             df.dropna(axis=1, how="all", inplace=True)
 
-            # Видалення дублікатів
+            # Видалення дублікатів (якщо є)
             df.drop_duplicates(inplace=True)
 
-            # Скидання індекса для коректного експорту в CSV
+            # Скидаємо індекс для коректної роботи з даними
             df.reset_index(drop=True, inplace=True)
+
+            # Переконаємось, що колонка Date — у datetime форматі
+            if 'Date' in df.columns:
+                df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+                df.dropna(subset=['Date'], inplace=True)  # видаляємо рядки з некоректними датами
 
             self.logger.info(f"✅ Дані очищено: {df.shape[0]} рядків, {df.shape[1]} стовпців.")
             return df
@@ -27,7 +31,7 @@ class DataProcessor:
     def transform_data(self, df):
         self.logger.info("🔄 Трансформація даних...")
         try:
-            # Трансформація може включати конвертацію типів, створення нових колонок тощо
+            # Створюємо колонку з відсотковою зміною ціни закриття
             if "Close" in df.columns:
                 df["Returns"] = df["Close"].pct_change()
             self.logger.info("✅ Трансформація завершена.")

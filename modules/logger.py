@@ -12,7 +12,7 @@ class Logger:
 
     def log(self, message, level="INFO"):
         if self.levels.get(level, 1) < self.levels.get(self.log_level, 1):
-            return  # Пропускаємо повідомлення нижчого рівня
+            return
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         log_message = f"[{timestamp}] [{level}] {message}"
         if self.console_output:

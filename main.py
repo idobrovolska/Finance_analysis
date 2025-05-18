@@ -28,59 +28,57 @@ def process_request(params):
     evaluator = PredictionEvaluator(logger)
     chart_gen = ChartGenerator(logger)
 
-    # Параметри запиту
-    stock = params.get("stock", [""]).strip()
-    start_date = params.get("start_date", [""]).strip()
-    end_date = params.get("end_date", [""]).strip()
-    prediction = params.get("prediction", [""]).strip()
+    stock = params.get("stock", [""])[0].strip()
+    start_date = params.get("start_date", [""])[0].strip()
+    end_date = params.get("end_date", [""])[0].strip()
+    prediction = params.get("prediction", [""])[0].strip()
 
     logger.info(f"📊 Параметри запиту: stock={stock}, start_date={start_date}, end_date={end_date}, prediction={prediction}")
     if not (stock and start_date and end_date and prediction):
         return "<h2>⚠️ Усі поля форми повинні бути заповнені!</h2>"
 
-    # Збір даних
     tracker.start("data_collection")
-    data = collector.fetch_data(stock, start_date, end_date)
+    data = collector.fetch_data(stock, start_date, end_date)  # має повертати pd.DataFrame
     tracker.stop("data_collection")
 
-    if data.empty:
+    if all([df is None or df.empty for _, df in data]):
         return f"<h2>⚠️ Дані для акції {stock} за період {start_date} - {end_date} не знайдено або сталася помилка.</h2>"
 
-    # Збереження csv
     os.makedirs("data", exist_ok=True)
-    filename = f"data/{stock}_{start_date}_{end_date}.csv"
-    data.to_csv(filename)
-    logger.info(f"Дані збережено у файл {filename}")
+    files = []
+    for site, df in data:
+        filename = f"data/{site}_{stock}_{start_date}_{end_date}.csv"
+        files.append(filename)
+        df.to_csv(filename)
+        logger.info(f"Дані збережено у файл {filename}")
 
-    # Очищення і трансформація
-    tracker.start("data_processing")
-    cleaned_data = processor.clean_data(data)
-    transformed_data = processor.transform_data(cleaned_data)
-    tracker.stop("data_processing")
+    # tracker.start("data_processing")
+    # cleaned_data = processor.clean_data(data)
+    # transformed_data = processor.transform_data(cleaned_data)
+    # tracker.stop("data_processing")
 
-    # Оцінка прогнозу
     tracker.start("prediction_evaluation")
-    error = evaluator.evaluate(filename, prediction)
+    errors = evaluator.evaluate(data, prediction)
     tracker.stop("prediction_evaluation")
 
-    # Генерація графіку
-    chart_path = chart_gen.generate_price_chart(filename, ticker=stock)
+    chart_path = chart_gen.generate_price_chart(data, ticker=stock)
     chart_html = f'<p><img src="/{chart_path}" alt="Price Chart"></p>' if chart_path else ""
 
-    # Звіт продуктивності
     report = tracker.generate_report()
     report_html = "<ul>" + "".join([f"<li>{line}</li>" for line in report]) + "</ul>"
 
-    # Формування відповіді
-    if error is not None:
-        result_text = f"<p>Абсолютна помилка прогнозу: {error:.2f}</p>"
-    else:
+
+    if errors:
+        result_text = ""
+        for site, error in errors:
+            result_text += f"<p>Абсолютні помилка прогнозу ({site}): {error:.2f}</p>\n"
+    if not errors:
         result_text = "<p>Не вдалося оцінити прогноз.</p>"
+
 
     return f"""
     <h2>Результат для акції {stock} ({start_date} - {end_date}):</h2>
-    <p>Дані збережено у файл: {filename}</p>
-    {result_text}
+    <p>Дані збережено у файли: <br>{'<br>'.join(files)}</p>
     <h3>Графік динаміки цін:</h3>
     {chart_html}
     <h3>Звіт про продуктивність:</h3>
@@ -91,8 +89,12 @@ def process_request(params):
 
 if __name__ == "__main__":
     from wsgiref.simple_server import make_server
-    import server  # Імпорт сервера, де є application
+    import server
 
-    with make_server("", 8000, server.application) as httpd:
-        print("Serving on port 8000...")
-        httpd.serve_forever()
+    try:
+        with make_server("", 8000, server.application) as httpd:
+            print("Serving on port 8000...")
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nСервер зупинено користувачем (Ctrl+C).")
+
