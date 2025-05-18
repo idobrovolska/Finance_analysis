@@ -19,7 +19,7 @@ def load_config(config_file="config.json"):
 
 
 def process_request(params):
-    print("🔍 process_request викликається")
+    #print("🔍 process_request викликається")
     config = load_config()
     logger = Logger()
     tracker = PerformanceTracker(logger)

@@ -17,7 +17,7 @@ class Logger:
         log_message = f"[{timestamp}] [{level}] {message}"
         if self.console_output:
             print(log_message)
-        with open(self.log_file, "a") as f:
+        with open(self.log_file, "a", encoding="utf-8") as f:
             f.write(log_message + "\n")
 
     def debug(self, message):
